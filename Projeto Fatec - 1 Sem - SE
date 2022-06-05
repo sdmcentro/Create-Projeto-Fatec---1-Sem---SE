@@ -1,0 +1,102 @@
+## Descrição do Projeto
+Decidimos automatizar um dispenser de copo descartavéis, devido a Pandemia do Coronavirus transformando o dispositivo em Touchless.
+-------------
+## Lista de Materias:
+1 Módulo ultrassom Hc-sr04 Hcsr04 Arduino Sensor Ultrassonico
+1 Arduino UNO SDM
+1 Motor de Passo com driver para - Arduino
+1 Dispenser de copos manual
+1 Gremalheira plastica de 30mm
+1 Engrenagem com 2 mm de diâmetro e 10 mm de comprimento
+-------------
+## Montagem:
+
+
+-------------
+##Código-fonte:
+
+#include <Stepper.h>
+
+//Inclui a biblioteca que contém as funções do motor de passo
+#include <AccelStepper.h>
+//Conversão de graus para steps:
+//360° = 1024 
+//180° = 512
+//90° = 256
+//60° = 170
+//45° = 128
+//30° = 85
+//15° = 28
+#define N_STEPS 1024
+
+
+int echoPino = 12;
+int trigPino = 13;
+long duracao = 0;
+long distancia = 0;
+#define active 10
+bool movimenta = false; 
+// Cria objeto SteperMotor indicando o numero de voltas e os pinos de controle 
+AccelStepper StepperMotor (AccelStepper::FULL4WIRE, 8, 10, 9, 11); 
+void setup()
+{  
+  Serial.begin (9600);
+  pinMode (echoPino , INPUT);
+  pinMode (trigPino , OUTPUT);
+    // Configura a velocidade máxima em passos por segundo
+  StepperMotor.setMaxSpeed(2000);
+  // Configura a aceleração do motor
+  StepperMotor.setAcceleration(200);
+  
+  // Define o movimento do motor
+  StepperMotor.moveTo(N_STEPS);
+}
+void loop()
+{
+  {
+    if (!movimenta) {
+    digitalWrite (trigPino, LOW);
+    delayMicroseconds(10);  
+    digitalWrite (trigPino, HIGH);
+    delayMicroseconds(10);  
+    digitalWrite (trigPino, LOW);
+    duracao = pulseIn (echoPino, HIGH);
+  distancia = duracao /58;
+Serial.print("Distancia em cm:");
+  Serial.println(distancia);
+    if(distancia < active)
+  {
+    movimenta = true;
+  }
+  }
+
+  if (movimenta)  {
+  // Verifica se ainda existem passos a serem dados
+  if (StepperMotor.distanceToGo() == 0){
+    // Executa o comando par dar uma volta no sentido contrário e parar no mesmo ponto.
+    delay(10);
+     movimenta = false;
+    StepperMotor.moveTo(-StepperMotor.currentPosition());
+   
+  }
+  // Habilita as portas de controle do arduino para movimentar o motor
+  StepperMotor.run();
+  }
+  else
+    delay(50);
+  }
+  }
+  
+  ## Resultados:
+  O projeto inicial é composto por um motor de passo de gravador de cd-rom,
+  pensando na montagem da parte mecânica o que ficou muito bom, porém não
+  havia biblioteca disponivel para esse motor, precisamos alterar toda a parte mecânica
+  do projeto a um semana da amostra, com isso tivemos que revisar o código
+  e fomos ralizando ajustes até o dia da apresentação.
+  A idéia inicial seria aproximar a mão a uma distância de 10cm do sensor, assim acionava
+  o movimento de avanço do motor e depois o retorno deveria ser feito de maneira automatica,
+  no entanto o retorno preciso ser feito uma entrada no sensor.
+  Ficamos satisfeito com o resultado, devido todas as dificuldades e solucões encontradas.
+  
+  
+    StepperMotor.moveTo(-StepperMotor.currentPosition());
